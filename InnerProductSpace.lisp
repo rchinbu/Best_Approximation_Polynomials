@@ -1,0 +1,36 @@
+;linear algebra functions
+
+(defun norm (linalg x)
+	(funcall (cadr linalg)  
+			(/ 1 (sqrt (funcall (caddr linalg) x x))) 
+			x))
+(defun orthoproj (linalg v s)
+	(funcall (cadr linalg) 
+		(/ 
+			(funcall (caddr linalg) v s) 
+			(funcall (caddr linalg) s s))
+		s))
+(defun projbasis (linalg basis v)
+	(mapcar (lambda (x) (orthoproj linalg v x))
+		basis))
+(defun addvec (linalg vlist)
+	(if (null (cdr vlist))
+		(car vlist)
+		(funcall (car linalg) (car vlist) (addvec linalg (cdr vlist)))))
+(defun gsortho1 (linalg basis)
+	(cons 
+		(norm linalg 
+			(funcall (car linalg) 
+				(car basis) 
+				(*p -1 (addvec linalg (projbasis linalg (cdr basis) (car basis))))))
+		(cdr basis)))
+(defun gsortho (linalg basis)
+	(if (null (cdr basis))
+		(cons (norm linalg (car basis)) nil)
+		(gsortho1 linalg (cons (car basis) (gsortho linalg (cdr basis))))))
+(defun projorthobasis (linalg orthobasis v)
+	(if (null (cdr orthobasis))
+		(orthoproj linalg v (car orthobasis))
+		(vplus 
+			(orthoproj linalg v (car orthobasis))
+			(projorthobasis linalg (cdr orthobasis) v))))
